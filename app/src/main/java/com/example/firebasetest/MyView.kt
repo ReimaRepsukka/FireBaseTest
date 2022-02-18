@@ -7,8 +7,11 @@ import androidx.compose.material.OutlinedButton
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import com.google.firebase.auth.ktx.auth
 
 import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.firestore.ktx.getField
 import com.google.firebase.ktx.Firebase
 import io.grpc.BinaryLog
 
@@ -16,15 +19,62 @@ import io.grpc.BinaryLog
 fun MainView() {
     var text by remember { mutableStateOf("") }
 
+    val fAuth = Firebase.auth
     val fireStore = Firebase.firestore
 
-    fireStore
-        .collection("users")
-        .whereEqualTo("fname", "Lisa")
-        .get()
+    fAuth
+        .signInWithEmailAndPassword("reima@reima.com", "reimarii")
         .addOnSuccessListener {
-
+            fireStore
+                .collection("blogs")
+                .document(it.user!!.uid)   //only the authorizer user has access
+                .set( Blog("My personal message") )
         }
+
+
+}
+
+
+@Composable
+fun Exercise7() {
+    var email by remember { mutableStateOf("") }
+    var pw by remember { mutableStateOf("") }
+    var info by remember { mutableStateOf("") }
+    val fAuth = Firebase.auth
+
+
+    Column() {
+
+        OutlinedTextField(
+            value = email,
+            onValueChange = { email = it },
+            label = { Text("Email") })
+
+        OutlinedTextField(
+            value = pw,
+            onValueChange = { pw = it },
+            label = { Text("Password") },
+            visualTransformation = PasswordVisualTransformation())
+
+        OutlinedButton(
+            onClick = {
+                fAuth
+                    .signInWithEmailAndPassword(email,pw)
+                    .addOnSuccessListener {
+                        info = "You are logged in with account ${it.user!!.email.toString()}"
+                    }
+            }
+        ) {
+            Text(text = "Login")
+        }
+
+        Text(text = info)
+    }
+
+}
+
+@Composable
+fun Test() {
 
 }
 
